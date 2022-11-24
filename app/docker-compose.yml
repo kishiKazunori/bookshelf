@@ -1,0 +1,49 @@
+version: '3.7'
+
+services:
+  web-back:
+    container_name: python-backend
+    env_file: ./backend/web-back/.env
+    build: ./backend/web-back/.
+    volumes:
+      - ./backend/web-back:/code/
+      - static_volume:/code/staticfiles # <-- bind the static volume
+    stdin_open: true
+    tty: true
+    command: gunicorn --bind :8000 config.wsgi:application
+    networks:
+      - backend_network
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - DJANGO_SETTING_MODULE=config.local_settings
+    depends_on:
+      - db
+  backend-server:
+    container_name: nginx_back
+    build:
+      context: ./backend/nginx/.
+      dockerfile: Dockerfile.dev
+    volumes:
+      - static_volume:/code/staticfiles
+    ports:
+      - "8080:80"
+    depends_on:
+      - web-back
+    networks:
+      - backend_network
+  db:
+    image: postgres:13.1
+    container_name: postgres
+    volumes:
+      - ./postgresql_volume:/var/lib/postgresql/data
+      # - ./sql:/docker-entrypoint-initdb.d/
+    ports:
+      - 5432:5432
+    networks:
+      - backend_network
+  
+networks:
+  backend_network:
+    driver: bridge
+volumes:
+  static_volume:

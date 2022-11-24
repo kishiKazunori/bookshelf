@@ -1,9 +1,0 @@
-{
-    "name": "Django app",
-    // docker file 指定
-    "dockerfile": "Dockerfile",
-    // リモート先にインストールするVScodeの拡張機能指定
-    "extensions": [
-        "ms-python.pyhton"
-    ]
-}
